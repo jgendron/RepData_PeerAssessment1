@@ -151,13 +151,10 @@ the highest is 206.1698 which occurs in interval 835 (equivalent to 35
 
 ## Imputing missing values
 
-Note that there are a number of days/intervals where there are missing values
-(coded as NA). The presence of missing days may introduce bias into some
-calculations or summaries of the data.
-1. Calculate and report the total number of missing values in the dataset
-(i.e. the total number of rows with NAs)
+Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-This table call provides an indication of the magnitude of misssing values in the full dataset
+This table call provides an indication of the magnitude of misssing values in the full dataset:
 
 
 ```r
@@ -174,6 +171,8 @@ table(missing)
 
 As noted in the assignment instructions, a dataset containing a large number of missing values could introduce bias into the results for daily activity patterns. These missing value can be filled with generated data using a process called imputation. This process requires a strategy. The assignment asked us to developed a relatively simplistic approach to imputation. Based on the work we have thusfar, let's consider how representative the various means and medians for days and intervals from values already calculated.
 
+2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.A
+
 
 ```r
 boxplot(means, medians, interval.means, interval.medians, axes = FALSE, main = "Figure 3: Consideration of data distribution for imputation  strategy", 
@@ -186,13 +185,15 @@ box()
 ![plot of chunk imputationStrategy](figure/imputationStrategy.png) 
 
 
-Based on this quick boxplot, one may dismiss the data factored by interval as compared by day based on the higher variance present. This makes sense in light of the time series plot of daily activity patterns in Figure 2 showing the variation seen with respect to time of day. That leaves manipulation by day. It is noteworthy to see a median of zero. This indicates a very right-skewed dataset. In these cases, a more robust measure of center is median; however, simply adding a value of "0" for each step observation of "NA" would not enhance the data - it would yield the same results.
+Based on this quick boxplot, one may dismiss a strategy using the data factored by interval as compared by day based on the higher variance present. This makes sense in light of the time series plot of daily activity patterns in Figure 2 showing the variation seen with respect to time of day. That leaves manipulation by day. It is noteworthy to see a median of zero. This indicates a very right-skewed dataset. In these cases, a more robust measure of center is median; however, simply adding a value of "0" for each step observation of "NA" would not enhance the data - it would yield the same results.
 
 This led to an inquiry on other methods of imputation that may *blend* the final dataset with a combination of "0"s and "NA"s that are representative of the data collected.
 
 Kabucoff (2011) notes, "In simple imputation, the missing values in a variable are replaced with a single value (for example, mean, median, or mode)...An advantage to simple imputation is that it solves the 'missing values problem' without reducing the sample size" (p. 371).
 
 However, the author forewarns readers by noting, "...simple imputation is likely to underestimate standard errors, distort correlations among variables, and produce incorrect p-values in statistical tests. Like pairwise deletion, I recommend avoiding this approach for most missing data problems" (p. 371).
+
+3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
 
 ```r
@@ -281,54 +282,118 @@ summary(DF)
 
 As compared with a summary of the original data, the adjusted Mean   : 38.8   differs only slightly from the original Mean   : 37.4   
 
-2. Devise a strategy for filling in all of the missing values in the dataset. The
-strategy does not need to be sophisticated. For example, you could use
-the mean/median for that day, or the mean for that 5-minute interval, etc.A
-3. Create a new dataset that is equal to the original dataset but with the
-missing data filled in.
-4. Make a histogram of the total number of steps taken each day and Calculate
-and report the mean and median total number of steps taken per day. Do
-these values differ from the estimates from the first part of the assignment?
-What is the impact of imputing missing data on the estimates of the total
-daily number of steps?
+
+4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
 
 
+```r
+sum.full <- tapply(finaldata$steps, finaldata$date, sum, na.rm = TRUE)
+means.full <- tapply(data.complete$steps, data.complete$date, mean, na.rm = TRUE)
+medians.full <- tapply(data.complete$steps, data.complete$date, median, na.rm = TRUE)
+summary(sum.full)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      41    9820   11500   11200   13500   21200
+```
+
+```r
+summary(means.full)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+##    0.14   30.70   37.40   37.40   46.20   73.60       8
+```
+
+```r
+summary(medians.full)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+##       0       0       0       0       0       0       8
+```
+
+```r
+hist(sum.full, breaks = 20)
+```
+
+![plot of chunk UpdatedHistogram-MeanPerDay](figure/UpdatedHistogram-MeanPerDay.png) 
+
+
+The assignment posed the question, **Do these values differ from the estimates from the first part of the assignment?**
+
+The assignment also posed the question, **What is the impact of imputing missing data on the estimates of the total daily number of steps?**
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-For this part the weekdays() function may be of some help here. Use the dataset
-with the filled-in missing values for this part.
+For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 
 
 ```r
 finaldata.dates <- as.Date(finaldata[, 2])
-finaldata.dates[9000] - finaldata.dates[1]
+weekdays <- weekdays(finaldata.dates)
+finaldata <- cbind(finaldata, weekdays)
+finaldata$weekdays <- gsub("Sunday", "weekend", finaldata$weekdays)
+finaldata$weekdays <- gsub("Saturday", "weekend", finaldata$weekdays)
+finaldata$weekdays <- gsub(".*day?", "weekday", finaldata$weekdays)
 ```
 
-```
-## Time difference of 31 days
-```
+
+1. Create a new factor variable in the dataset with two levels  weekday and weekend indicating whether a given date is a weekday or weekend day.
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
+
 
 ```r
-finaldata.dates <- weekdays(finaldata.dates)
-weekends <- finaldata.dates[finaldata.dates == "Sunday" | finaldata.dates == 
-    "Saturday"]
+library(lattice)
+## Simple scatterplot
+interval.means.full <- tapply(finaldata$steps, INDEX = list(finaldata$interval, 
+    finaldata$weekdays), mean, na.rm = TRUE)
+head(interval.means.full)
+```
+
+```
+##    weekday weekend
+## 0  3.62222    0.00
+## 5  4.66667    9.25
+## 10 0.55556    0.00
+## 15 0.17778    0.00
+## 20 0.08889    0.00
+## 25 1.31111    3.25
 ```
 
 
-1. Create a new factor variable in the dataset with two levels  weekday
-and weekend indicating whether a given date is a weekday or weekend
-day.
-2. Make a panel plot containing a time series plot (i.e. type = "l") of the
-5-minute interval (x-axis) and the average number of steps taken, averaged
-across all weekday days or weekend days (y-axis). The plot should look
-something like the following, which was creating using simulated data:
-Your plot will look different from the one above because you will be using
-the activity monitor data. Note that the above plot was made using the lattice
-system but you can make the same version of the plot using any plotting system
-you choose.
+#xyplot(Ozone ~ Wind | weekdays, data = finaldata, layout = c(1,2))
 
 
+
+```r
+library(reshape2)
+md <- melt(interval.means.full)
+names(md)
+```
+
+```
+## [1] "Var1"  "Var2"  "value"
+```
+
+
+Now we can easily plot it with the `xyplot()` function to compare the activity patterns:
+
+
+```r
+library(lattice)
+xyplot(value ~ Var1 | Var2, data = md, type = "l", layout = c(1, 2), xlab = "Interval", 
+    ylab = "Average number of steps", main = "blah blah blah")
+```
+
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+
+
+
+```
 <!-- URL List -->
 [1]: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 [2]: http://github.com/rdpeng/RepData_PeerAssessment1
