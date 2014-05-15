@@ -1,18 +1,20 @@
 # Reproducible Research: Peer Assessment 1
-### *Walking with the Data - Jay Gendron*
+### *Taking a Walk with Data - Jay Gendron*
 
 ## Loading and preprocessing the data
 
-The purpose of this analysis is to answer a series of questions relating to the activity patterns  from data collected from a personal activity monitoring device. The [data][1] for this analysis was provided to us on the Reproducible Research [GitHub Repository][2] for the Coursera Data Science Specialization Program. The data used in this analysis is summarized on {coursera } as 
+The purpose of this analysis is to answer a series of questions relating to the activity patterns of subjects wearing a personal activity monitoring device. The [data][1] (Peng, 2014) for this analysis was provided to us on the Reproducible Research [GitHub repository][2] for the Coursera Data Science Specialization Program. The data used in this analysis is described in the source: 
 
->This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.  
+>This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day. (Reproducible Research | Coursera, 2014, para. 3)  
 
-Because it was loaded in the repository, loading the data is a simple matter of unzipping the file and reading in the .csv file into a dataframe.
+Because the data was placed in the GitHub repository, loading the data is a simple matter of unzipping the file and reading in the .csv file into a dataframe using the *read.csv* command.
 
 
 ```r
+# Unzip the data and then read into dataframe
 unzip("./RepData_PeerAssessment1/activity.zip")
 DF <- read.csv("activity.csv")  #, colClasses=c(NA,'factor','factor'))
+# Present the underlying structure of dataframe DF
 str(DF)
 ```
 
@@ -23,39 +25,19 @@ str(DF)
 ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
-Note the use of the ColClasses parameter to read the second two variables into the dataframe as factors
 
-Based on a review of the analytic needs, the data was placed into three different datasets to address the questions:
-
-* a subset containing only "complete cases" of the dataframe
-* alkjadsf
-* alskdfj
+Based on a review of the analytic needs of the project, an additional dataframe (dataComplete) was generated to isolate only "complete cases" having no missing values. This was accomplished by transforming the original dataframe (DF) using the *complete.cases()* command to remove all rows having an "NA" value. No other transformations were necessary on the original dataframe. specifically, the structure of DF (and dataComplete) are appropriate for this analyis [steps=>int; data=>factor; interval=>int].
 
 
 ```r
+# Eliminate all rows having value 'NA'
 complete <- complete.cases(DF)
-data.complete <- DF[complete, ]
-summary(data.complete)
-```
-
-```
-##      steps               date          interval   
-##  Min.   :  0.0   2012-10-02:  288   Min.   :   0  
-##  1st Qu.:  0.0   2012-10-03:  288   1st Qu.: 589  
-##  Median :  0.0   2012-10-04:  288   Median :1178  
-##  Mean   : 37.4   2012-10-05:  288   Mean   :1178  
-##  3rd Qu.: 12.0   2012-10-06:  288   3rd Qu.:1766  
-##  Max.   :806.0   2012-10-07:  288   Max.   :2355  
-##                  (Other)   :13536
+# Generate dataframe with only complete data
+dataComplete <- DF[complete, ]
 ```
 
 
-
-
-convert date to 
-2. Process/transform the data (if necessary) into a format suitable for your analysis
-
-Let's take a quick look at the contents of this dataframe in a summary view
+A summary view of the original and transformed dataframes shows that the 2,304 missing values (observations) were removed with no other impacts on the data. the .
 
 
 ```r
@@ -73,6 +55,35 @@ summary(DF)
 ##  NA's   :2304    (Other)   :15840
 ```
 
+```r
+summary(dataComplete)
+```
+
+```
+##      steps               date          interval   
+##  Min.   :  0.0   2012-10-02:  288   Min.   :   0  
+##  1st Qu.:  0.0   2012-10-03:  288   1st Qu.: 589  
+##  Median :  0.0   2012-10-04:  288   Median :1178  
+##  Mean   : 37.4   2012-10-05:  288   Mean   :1178  
+##  3rd Qu.: 12.0   2012-10-06:  288   3rd Qu.:1766  
+##  Max.   :806.0   2012-10-07:  288   Max.   :2355  
+##                  (Other)   :13536
+```
+
+
+The transformed dataframe was reduced from 17,568 observations to 15,264 observations
+
+
+```r
+str(dataComplete)
+```
+
+```
+## 'data.frame':	15264 obs. of  3 variables:
+##  $ steps   : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
 
 ## What is mean total number of steps taken per day?
 
@@ -86,9 +97,9 @@ per day
 
 
 ```r
-sum <- tapply(data.complete$steps, data.complete$date, sum, na.rm = TRUE)
-means <- tapply(data.complete$steps, data.complete$date, mean, na.rm = TRUE)
-medians <- tapply(data.complete$steps, data.complete$date, median, na.rm = TRUE)
+sum <- tapply(dataComplete$steps, dataComplete$date, sum, na.rm = TRUE)
+means <- tapply(dataComplete$steps, dataComplete$date, mean, na.rm = TRUE)
+medians <- tapply(dataComplete$steps, dataComplete$date, median, na.rm = TRUE)
 summary(sum)
 ```
 
@@ -116,7 +127,8 @@ summary(medians)
 ```
 
 ```r
-hist(sum, breaks = 20)
+hist(sum, breaks = 20, main = "Figure 1: Total Number of Steps Taken Each Day", 
+    xlab = "Number of Steps Taken")
 ```
 
 ![plot of chunk mean per day](figure/mean_per_day.png) 
@@ -129,10 +141,8 @@ hist(sum, breaks = 20)
 
 
 ```r
-interval.means <- tapply(data.complete$steps, data.complete$interval, mean, 
-    na.rm = TRUE)
-interval.medians <- tapply(data.complete$steps, data.complete$date, median, 
-    na.rm = TRUE)
+interval.means <- tapply(dataComplete$steps, dataComplete$interval, mean, na.rm = TRUE)
+interval.medians <- tapply(dataComplete$steps, dataComplete$date, median, na.rm = TRUE)
 highest <- which(interval.means == max(interval.means))
 steps <- interval.means[highest]
 interval <- names(steps)
@@ -288,8 +298,8 @@ As compared with a summary of the original data, the adjusted Mean   : 38.8   di
 
 ```r
 sum.full <- tapply(finaldata$steps, finaldata$date, sum, na.rm = TRUE)
-means.full <- tapply(data.complete$steps, data.complete$date, mean, na.rm = TRUE)
-medians.full <- tapply(data.complete$steps, data.complete$date, median, na.rm = TRUE)
+means.full <- tapply(dataComplete$steps, dataComplete$date, mean, na.rm = TRUE)
+medians.full <- tapply(dataComplete$steps, dataComplete$date, median, na.rm = TRUE)
 summary(sum.full)
 ```
 
@@ -389,15 +399,18 @@ xyplot(value ~ Var1 | Var2, data = md, type = "l", layout = c(1, 2), xlab = "Int
     ylab = "Average number of steps", main = "blah blah blah")
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
 
 
-
-```
 <!-- URL List -->
 [1]: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 [2]: http://github.com/rdpeng/RepData_PeerAssessment1
 
+### References
+
+Peng, R. D. (2014, February 11). Activity monitoring data [Data file]. Retrieved from http://github.com/rdpeng/RepData_PeerAssessment1.
+
+Reproducible Research | Coursera. (2014). *Peer Assessment 1*. Retrieved from https://class.coursera.org/repdata-002/human_grading/view/courses/972084/assessments/3/submissions.
 
 
 van Buuren, S., Groothuis-Oudshoorn, K., Robitzsch, A., Vink, G., Doove, L., & Jolani, S. (2014, February 5). *Multivariate imputation by chained equations*. Retrieved from http://cran.r-project.org/web/packages/mice/mice.pdf.
