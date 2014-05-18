@@ -241,7 +241,7 @@ box()
 
 
 ### *Strategy Considerations*
-Based on the boxplot in Figure 3, two very different pictures emerge which require some though in determining an imputation strategy. Both medians (by day and by interval) are very close to zero. This indicates a highly right-skewed distribution of average steps per day. In these cases, a more robust measure of center is median; however, simply adding a value of "0" for each step observation of "NA" would not enhance the data - it would yield the same results as the original dataframe {DF}. 
+Based on the boxplot in Figure 3, two very different pictures emerge which require some thought in determining an imputation strategy. Both medians (by day and by interval) are very close to zero. This indicates a highly right-skewed distribution of average steps per day. In these cases, a more robust measure of center is median; however, simply adding a value of "0" for each step observation of "NA" would not enhance the data - it would yield the same results as the original dataframe {DF}. 
 
 Looking at the mean values by day and interval show equal point estimates (37.383 steps) but greatly different variances. If one were to use the mean point estimates, it may be best to use the mean by interval to better account for the variation and not simply add a fairly constant mean to the missing values. Figure 2 supports this logic because the average number of steps was near zero in the early morning and late evening hours.
 
@@ -309,8 +309,23 @@ dim(impute$imp$steps)
 ```
 
 
-A quick summary look at this imputed data shows no missing data:
+A quick summary look at this imputed data shows a full dataset of 17,568 observations with no missing data:
 
+
+```r
+str(finaldata)  # Imputed data
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  0 0 39 18 0 0 399 0 0 21 ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##   ..- attr(*, "contrasts")= num [1:61, 1:60] 0 1 0 0 0 0 0 0 0 0 ...
+##   .. ..- attr(*, "dimnames")=List of 2
+##   .. .. ..$ : chr  "2012-10-01" "2012-10-02" "2012-10-03" "2012-10-04" ...
+##   .. .. ..$ : chr  "2" "3" "4" "5" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
 
 ```r
 summary(finaldata)  #Imputed data
@@ -471,8 +486,6 @@ names(md)
 ```
 
 
-Figure 5 provides a panel plot comparing activity patterns. The plot was created using the *xyplot()* function from the *lattice* package. It shows comparative time series plots of the average number of steps taken as a function of the 5-interval. It adds an additional dimension by comparing weekend days to weekday days. The plot indicates that the subjects were more active for longer periods of time during the weekend as the weekday. This would makes sense as during the weekday those in an office will produce less activity if they are sitting than during the weekend when they may be doing any number of things. One also notices the weekday has greater variation in activity amplitude where the weekend is overall a flatter distribution.
-
 
 ```r
 library(lattice)
@@ -482,6 +495,8 @@ xyplot(value ~ Var1 | Var2, data = md, type = "l", layout = c(1, 2), main = "Fig
 
 ![plot of chunk panelPlot](figure/panelPlot.png) 
 
+
+Figure 5 provides a panel plot comparing activity patterns. The plot was created using the *xyplot()* function from the *lattice* package. It shows comparative time series plots of the average number of steps taken as a function of the 5-minute interval. It adds an additional dimension by comparing weekend days to weekday days. The plot indicates that the subjects were more active for longer periods of time during the weekend as the weekday. This would make sense as during the weekday those in an office will produce less activity if they are sitting than during the weekend when they may be doing any number of things. One also notices the weekday has greater variation in activity amplitude where the weekend is overall a flatter distribution.
 
 ### References
 
